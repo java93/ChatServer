@@ -7,6 +7,7 @@ import kg.java.messages.MessageType;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -64,10 +65,18 @@ public class Server {
 
                 while (socket.isConnected()) {
                     Message message = (Message) objectInputStream.readObject();
+                    //TODO: handle message if DISCONNECT type
                     sendMessage(message);
                 }
+            } catch (SocketException e) {
+                onlineUsers.remove(username);
+                senders.remove(objectOutputStream);
+                Message message = new Message();
+                message.setName(username);
+                message.setType(MessageType.DISCONNECTED);
+                message.setMsg(String.format("User %s has been disconnected",username));
+                sendMessage(message);
             } catch (IOException e) {
-                //TODO: remove user if disconnected;
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
